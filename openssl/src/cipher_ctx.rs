@@ -50,6 +50,7 @@
 //! ```
 #![warn(missing_docs)]
 
+use crate::LenType;
 use crate::cipher::CipherRef;
 use crate::error::ErrorStack;
 #[cfg(not(boringssl))]
@@ -528,6 +529,48 @@ impl CipherCtxRef {
                 inlen,
             ))?;
         }
+
+        Ok(outlen as usize)
+    }
+
+    /// Writes data into the context.
+    ///
+    /// Returns the number of bytes written to `output`.
+    ///
+    /// # Panics
+    ///
+    /// For stream ciphers panics when input buffer size differs from
+    /// output buffer size.
+    ///
+    /// For block ciphers panics when input buffer size is different from
+    /// the block size or if output's size is not large enough to contain
+    /// one block.
+    pub unsafe fn unchecked_cipher_update(
+        &mut self,
+        input: &[u8],
+        output: &mut [u8],
+    ) -> Result<usize, ErrorStack> {
+        let inlen = LenType::try_from(input.len()).unwrap();
+
+        let block_size = self.block_size();
+        if block_size > 1 {
+            // block cipher
+            assert_eq!(block_size, input.len());
+            assert!(output.len() >= block_size);
+        } else {
+            // stream cipher
+            assert_eq!(input.len(), output.len());
+        }
+
+        let mut outlen = 0;
+
+        cvt(ffi::EVP_CipherUpdate(
+            self.as_ptr(),
+            output.as_mut_ptr(),
+            &mut outlen,
+            input.as_ptr(),
+            inlen,
+        ))?;
 
         Ok(outlen as usize)
     }
