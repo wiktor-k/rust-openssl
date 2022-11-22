@@ -482,25 +482,109 @@ impl PKey<Private> {
         ctx.keygen()
     }
 
-    /// Generates a new private Ed25519 key
+    /// Generates a new private X25519 key.
+    ///
+    /// To import a private key from raw bytes see [`PKey::private_key_from_raw_bytes`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use openssl::pkey::{PKey, Id};
+    /// use openssl::derive::Deriver;
+    ///
+    /// let public = // ...
+    /// # &PKey::generate_x25519()?.raw_public_key()?;
+    /// let public_key = PKey::public_key_from_raw_bytes(public, Id::X25519)?;
+    ///
+    /// let key = PKey::generate_x25519()?;
+    /// let mut deriver = Deriver::new(&key)?;
+    /// deriver.set_peer(&public_key)?;
+    ///
+    /// let secret = deriver.derive_to_vec()?;
+    /// assert_eq!(secret.len(), 32);
+    /// # Ok(()) }
+    /// ```
     #[cfg(ossl111)]
     pub fn generate_x25519() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::X25519)
     }
 
-    /// Generates a new private Ed448 key
+    /// Generates a new private X448 key.
+    ///
+    /// To import a private key from raw bytes see [`PKey::private_key_from_raw_bytes`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use openssl::pkey::{PKey, Id};
+    /// use openssl::derive::Deriver;
+    ///
+    /// let public = // ...
+    /// # &PKey::generate_x448()?.raw_public_key()?;
+    /// let public_key = PKey::public_key_from_raw_bytes(public, Id::X448)?;
+    ///
+    /// let key = PKey::generate_x448()?;
+    /// let mut deriver = Deriver::new(&key)?;
+    /// deriver.set_peer(&public_key)?;
+    ///
+    /// let secret = deriver.derive_to_vec()?;
+    /// assert_eq!(secret.len(), 56);
+    /// # Ok(()) }
+    /// ```
     #[cfg(ossl111)]
     pub fn generate_x448() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::X448)
     }
 
-    /// Generates a new private Ed25519 key
+    /// Generates a new private Ed25519 key.
+    ///
+    /// To import a private key from raw bytes see [`PKey::private_key_from_raw_bytes`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use openssl::pkey::{PKey, Id};
+    /// use openssl::sign::Signer;
+    ///
+    /// let key = PKey::generate_ed25519()?;
+    /// let public_key = key.raw_public_key()?;
+    ///
+    /// let mut signer = Signer::new_without_digest(&key)?;
+    /// let digest = // ...
+    /// # &vec![0; 32];
+    /// let signature = signer.sign_oneshot_to_vec(digest)?;
+    /// assert_eq!(signature.len(), 64);
+    /// # Ok(()) }
+    /// ```
     #[cfg(ossl111)]
     pub fn generate_ed25519() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::ED25519)
     }
 
-    /// Generates a new private Ed448 key
+    /// Generates a new private Ed448 key.
+    ///
+    /// To import a private key from raw bytes see [`PKey::private_key_from_raw_bytes`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use openssl::pkey::{PKey, Id};
+    /// use openssl::sign::Signer;
+    ///
+    /// let key = PKey::generate_ed448()?;
+    /// let public_key = key.raw_public_key()?;
+    ///
+    /// let mut signer = Signer::new_without_digest(&key)?;
+    /// let digest = // ...
+    /// # &vec![0; 32];
+    /// let signature = signer.sign_oneshot_to_vec(digest)?;
+    /// assert_eq!(signature.len(), 114);
+    /// # Ok(()) }
+    /// ```
     #[cfg(ossl111)]
     pub fn generate_ed448() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::ED448)
