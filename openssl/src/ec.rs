@@ -1342,4 +1342,41 @@ mod test {
         let flag = group.asn1_flag();
         assert_eq!(flag, Asn1Flag::NAMED_CURVE);
     }
+
+    #[test]
+    fn generate_ec_ossl_3() {
+        use crate::nid::Nid;
+
+        let ctx = EVP_PKEY_CTX_new_from_name("EC", std::ptr::null());
+        // see https://gitlab.com/redhat/centos-stream/rpms/openssh/-/blob/c9s/openssh-8.7p1-evp-fips-compl-sign.patch?ref_type=heads#L164
+        let group_name = OSSL_EV_curve_nid2_name(Nid::SECP384R1);
+        let bld = OSSL_PARAM_BLD_new();
+        OSSL_PARAM_BLD_push_utf8_string("group", group_name.into(), group_name.len());
+        let public = EC_KEY_get0_public_key(k);
+        let group = EC_KEY_get0_group(k);
+        let len = EC_POINT_point2oct(
+            group,
+            public,
+            Ec::POINT_CONVERSION_UNCOMPRESSED,
+            std::ptr::null(),
+            0,
+            std::ptr::null(),
+        );
+
+        EC_POINT_point2oct(
+            group,
+            public,
+            Ec::POINT_CONVERSION_UNCOMPRESSED,
+            pub_ser,
+            len,
+            bn_ctx,
+        );
+        OSSL_PARAM_BLD_push_octet_string(bld, "pub-key", pub_ser, len);
+
+        EVP_PKEY_fromdata_init(ctx);
+        let param = OSSL_PARAM_BLD_to_param(param_bld);
+        EVP_PKEY_fromdata(ctx, ret, params);
+        OSSL_PARAM_free(params);
+        // ret contains a new PKEY
+    }
 }

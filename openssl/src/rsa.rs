@@ -849,4 +849,21 @@ mod test {
         let e = BigNum::from_u32(0x10001).unwrap();
         Rsa::generate_with_e(2048, &e).unwrap();
     }
+
+    #[test]
+    fn generate_rsa_ossl_3() {
+        let ctx = EVP_PKEY_CTX_new_from_name("RSA", std::ptr::null());
+        let bld = OSSL_PARAM_BLD_new();
+        let n = BigNum::new();
+        let e = BigNum::new();
+        let d = BigNum::new();
+        OSSL_PARAM_BLD_push_BN(bld, "n", n);
+        OSSL_PARAM_BLD_push_BN(bld, "e", e);
+        OSSL_PARAM_BLD_push_BN(bld, "d", d);
+        EVP_PKEY_fromdata_init(ctx);
+        let param = OSSL_PARAM_BLD_to_param(param_bld);
+        EVP_PKEY_fromdata(ctx, ret, params);
+        OSSL_PARAM_free(params);
+        // ret contains a new PKEY
+    }
 }

@@ -1,6 +1,8 @@
 use super::super::*;
 use libc::*;
 
+pub enum OSSL_PARAM_BLD {}
+
 cfg_if! {
     if #[cfg(ossl300)] {
         extern "C" {
@@ -27,6 +29,14 @@ cfg_if! {
             pub fn EVP_CIPHER_CTX_get_iv_length(ctx: *const EVP_CIPHER_CTX) -> c_int;
             pub fn EVP_CIPHER_CTX_get_tag_length(ctx: *const EVP_CIPHER_CTX) -> c_int;
             pub fn EVP_CIPHER_CTX_get_num(ctx: *const EVP_CIPHER_CTX) -> c_int;
+
+            pub fn EVP_PKEY_CTX_new_from_name(ctx: *const OSSL_LIB_CTX, name: *const c_char, propquery: *const c_char) -> *const EVP_PKEY;
+            pub fn EVP_PKEY_CTX_new_from_pkey(ctx: *const OSSL_LIB_CTX, pkey: *const EVP_PKEY, propquery: *const c_char) -> *const EVP_PKEY;
+
+            pub fn OSSL_PARAM_BLD_new() -> *const OSSL_PARAM_BLD;
+            pub fn OSSL_PARAM_BLD_push_BN(bld: *const OSSL_PARAM_BLD, key: *const c_char, bn: *const BIGNUM) -> c_int;
+            pub fn OSSL_PARAM_BLD_push_octet_string(bld: *const OSSL_PARAM_BLD, key: *const c_char, buf: *const c_char, bsize: c_int) -> c_int;
+            pub fn OSSL_EC_curve_nid2name(nid: c_int) -> *const c_char;
         }
     } else {
         extern "C" {
